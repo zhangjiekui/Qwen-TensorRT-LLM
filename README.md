@@ -1,3 +1,7 @@
+### 补充材料
+安装：https://www.modelscope.cn/models/tiansz/qwen_triton_trt_llm/summary
+
+
 ### [README FOR ENGLISH](qwen/README.md)
 # 总述
 ### 背景介绍
