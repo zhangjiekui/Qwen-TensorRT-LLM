@@ -1,5 +1,8 @@
 ### 补充材料
-安装：https://www.modelscope.cn/models/tiansz/qwen_triton_trt_llm/summary
+安装：已经准备好的docker镜像
+https://www.modelscope.cn/models/tiansz/qwen_triton_trt_llm/summary
+https://www.51cto.com/article/781021.html
+
 
 
 ### [README FOR ENGLISH](qwen/README.md)
