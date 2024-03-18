@@ -1,0 +1,139 @@
+4GPU服务器上的模型存储地址
+/home/jqsoft/.cache/modelscope/hub/qwen/Qwen1___5-72B-Chat-GPTQ-Int4
+/home/jqsoft/.cache/modelscope/hub/qwen/Qwen-72B-Chat-Int4
+
+/home/jqsoft/.cache/modelscope/hub/qwen/Qwen1___5-14B-Chat-GPTQ-Int8
+
+运行Qwen-TensorRT-LLM【https://github.com/Tlntin/Qwen-TensorRT-LLM/tree/main】
+
+一、下载镜像
+宿主机：
+#docker pull nvcr.io/nvidia/tritonserver:23.12-trtllm-python-py3 
+#docker tag nvcr.io/nvidia/tritonserver:23.12-trtllm-python-py3 tensorrt_llm/release
+【文档中版本是23.12，但因服务器上Nvidia Driver是12.1，因此选择下载23.07，cuda12.1，trtllm 0.70，参见https://docs.nvidia.com/deeplearning/frameworks/support-matrix/index.html】
+docker pull nvcr.io/nvidia/tritonserver:23.07-trtllm-python-py3
+docker tag nvcr.io/nvidia/tritonserver:23.07-trtllm-python-py3 tensorrt_llm07/release
+
+
+
+
+
+二、拉取项目代码
+git clone https://github.com/Tlntin/Qwen-TensorRT-LLM.git
+cd Qwen-TensorRT-LLM
+
+三、创建并启动容器【注意根据模型映射qwen/qwen2目录】
+创建并启动容器，同时将本地qwen2代码路径映射到/app/tensorrt_llm/examples/qwen2路径，然后打开8000和7860端口的映射，方便调试api和web界面。
+docker run --gpus all \
+  --name trt_llm07 \
+  -d \
+  --ipc=host \
+  --ulimit memlock=-1 \
+  --restart=always \
+  --ulimit stack=67108864 \
+  -p 8000:8000 \
+  -p 7860:7860 \
+  -v ${PWD}/examples/qwen2:/app/tensorrt_llm/examples/qwen2 \
+  tensorrt_llm/release sleep 8640000
+
+停止容器：
+docker ps -a
+docker stop <容器 ID>
+
+重启容器 
+docker restart trt_llm
+
+重新映射目录
+sudo -i 提升权限
+cd /var/lib/docker/containers/<容器 ID>
+nano config.v2.json【找到文件的 MountPoints】
+
+systemctl stop docker
+docker start trt_llm
+
+
+
+四、进入docker容器里面
+1、复制模型
+
+# 容器：mkdir /app/tensorrt_llm/examples/qwen2/model/
+宿主机：docker cp /home/jqsoft/.cache/modelscope/hub/qwen/Qwen1___5-72B-Chat-GPTQ-Int4 trt_llm07:/app/tensorrt_llm/examples/qwen2/qwen1.5_72b_chat_int4
+宿主机:   docker exec -it trt_llm07 /bin/bash
+
+2、PIP国内源【容器】
+mkdir ~/.pip
+nano ~/.pip/pip.conf
+将以下内容复制进pip.conf中：
+
+[global]
+index-url = https://pypi.tuna.tsinghua.edu.cn/simple
+index-index-url = https://mirrors.aliyun.com/pypi/simple/ 
+[install]
+trusted-host =
+    pypi.tuna.tsinghua.edu.cn
+    mirrors.aliyun.com
+
+3、安装环境和依赖
+安装pytorch2.1.0，目前还不支持2.2
+pip install torch==2.1.0 torchvision==0.16.0 torchaudio==2.1.0 --index-url https://download.pytorch.org/whl/cu121
+安装tensorrt_llm 0.7.0 
+pip install tensorrt_llm==0.7.0 --extra-index-url https://pypi.nvidia.com --extra-index-url https://download.pytorch.org/whl/cu121
+
+cd /app/tensorrt_llm/examples/qwen2/
+pip install -r requirements.txt
+
+安装auto-gptq和cuda extention(需编译安装)
+#pip install auto-gptq (这样安装没有cuda extention)
+git clone https://github.com/PanQiWei/AutoGPTQ.git && cd AutoGPTQ
+pip install numpy gekko pandas.
+pip install -vvv -e .
+
+
+pip install optimum
+pip install pynvml>=11.5.0
+pip install transformers -U
+
+4、编译
+
+下面是正确运行的
+CUDA_MODULE_LOADING=LAZY python build.py --hf_model_dir /app/tensorrt_llm/examples/qwen2/qwen1.5_72b_chat_int4/ \
+--parallel_build \
+--quant_ckpt_path /app/tensorrt_llm/examples/qwen2/qwen1.5_72b_chat_int4 \
+--dtype float16 \
+--remove_input_padding \
+--use_gpt_attention_plugin float16 \
+--enable_context_fmha \
+--use_gemm_plugin float16  \
+--use_weight_only \
+--weight_only_precision int4_gptq \
+--per_group \
+--world_size 4 \
+--tp_size 4  --use_inflight_batching  \
+--output_dir /app/tensorrt_llm/examples/qwen2/qwen1.5_72b_chat_int4/trt_engines/int4_gptq_cpudevice/4-gpu
+
+
+下面这个错误是因为打开了--visualize
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/dist-packages/torch/multiprocessing/spawn.py", line 74, in _wrap
+    fn(i, *args)
+  File "/app/tensorrt_llm/examples/qwen2/qwen2/build.py", line 744, in build
+    engine = build_rank_engine(
+  File "/app/tensorrt_llm/examples/qwen2/qwen2/build.py", line 683, in build_rank_engine
+    to_onnx(network.trt_network, model_path)
+  File "/app/tensorrt_llm/examples/qwen2/qwen2/build.py", line 63, in to_onnx
+    trt_dtype_to_onnx(network_input.dtype),
+  File "/app/tensorrt_llm/examples/qwen2/qwen2/build.py", line 53, in trt_dtype_to_onnx
+    raise TypeError("%s is not supported" % dtype)
+TypeError: DataType.INT64 is not supported
+
+5、运行
+mpirun -n 4 --allow-run-as-root python run.py \
+--tokenizer_dir=/app/tensorrt_llm/examples/qwen2/qwen1.5_72b_chat_int4 \
+--engine_dir=/app/tensorrt_llm/examples/qwen2/qwen1.5_72b_chat_int4/trt_engines/int4_gptq_cpudevice/4-gpu
+
+mpirun -n 4 --allow-run-as-root python run.py  --tokenizer_dir /app/tensorrt_llm/examples/qwen2/qwen1.5_72b_chat_int4 --engine_dir /app/tensorrt_llm/examples/qwen2/qwen1.5_72b_chat_int4/trt_engines/int4-gptq_cpudevice/4-gpu
+
+
+6、openai api
+
+
