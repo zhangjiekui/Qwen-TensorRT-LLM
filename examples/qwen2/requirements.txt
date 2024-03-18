@@ -13,3 +13,8 @@ mdtex2html
 sse_starlette
 aiohttp_sse_client
 openai==1.1.1
+accelerate> 0.21.0
+auto-gptq
+# git clone https://github.com/PanQiWei/AutoGPTQ.git && cd AutoGPTQ
+# pip install numpy gekko pandas .
+# pip install -vvv -e .
