@@ -1,3 +1,16 @@
+Vllm Docker:
+docker run --runtime nvidia --gpus all \
+    -v /home/jqsoft/Qwen-TensorRT-LLM/examples/qwen2/qwen1.5_72b_chat_int4:/home/jqsoft/Qwen-TensorRT-LLM/examples/qwen2/qwen1.5_72b_chat_int4 \
+    -p 8000:8000 \
+    --ipc=host \
+    vllm/vllm-openai:latest \
+    --model /home/jqsoft/Qwen-TensorRT-LLM/examples/qwen2/qwen1.5_72b_chat_int4 \
+    --tensor-parallel-size 4 \
+    --max-model-len 10000 \
+    --gpu-memory-utilization 0.85
+
+
+
 4GPU服务器上的模型存储地址
 /home/jqsoft/.cache/modelscope/hub/qwen/Qwen1___5-72B-Chat-GPTQ-Int4
 /home/jqsoft/.cache/modelscope/hub/qwen/Qwen-72B-Chat-Int4
