@@ -700,10 +700,17 @@ def load_from_gptq_qwen(
         model_params = torch.load(quant_ckpt_path, map_location=torch.device("cpu"))
     else:
         if os.path.isdir(quant_ckpt_path):
+            from transformers import GPTQConfig
+            qptq_config = GPTQConfig(bits=4,disable_exllama=True)
+            print('========'*10)
+            print(qptq_config)
+            print('========'*10)
+
             model = AutoModelForCausalLM.from_pretrained(
                 quant_ckpt_path,
-                device_map="cuda:0",
-                trust_remote_code=True
+                device_map="cpu",
+                trust_remote_code=True,
+                quantization_config = qptq_config
             ).cpu().eval()
             model_params = {k: v for k, v in model.state_dict().items()}
             torch.cuda.empty_cache()
