@@ -8,7 +8,7 @@ docker run --runtime nvidia --gpus all \
     --tensor-parallel-size 4 \
     --max-model-len 10000 \
     --gpu-memory-utilization 0.85
-
+python3 run_server.py --llm /home/jqsoft/Qwen-TensorRT-LLM/examples/qwen2/qwen1.5_72b_chat_int4 --model_server http://localhost:8000/v1 --api_key EMPTY
 
 
 4GPU服务器上的模型存储地址
