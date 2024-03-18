@@ -121,23 +121,24 @@ def parse_arguments():
     parser.add_argument(
         "--world_size",
         type=int,
-        default=1,
+        default=4,
         help="world size, only support tensor parallelism now",
     )
-    parser.add_argument("--tp_size", type=int, default=1)
+    parser.add_argument("--tp_size", type=int, default=4)
     parser.add_argument("--pp_size", type=int, default=1)
     parser.add_argument(
         "--hf_model_dir",
         type=str,
-        default=default_config.hf_model_dir,
+        default='/home/jqsoft/Qwen-TensorRT-LLM/examples/qwen2/qwen1.5_72b_chat_int4',
     )
     parser.add_argument(
         "--quant_ckpt_path",
         type=str,
-        default=os.path.join(
-            default_config.int4_gptq_model_dir,
-            "gptq_model-4bit-128g.safetensors",
-        ),
+        default= '/home/jqsoft/Qwen-TensorRT-LLM/examples/qwen2/qwen1.5_72b_chat_int4'
+        # default=os.path.join(
+        #     default_config.int4_gptq_model_dir,
+        #     "gptq_model-4bit-128g.safetensors",
+        # ),
         # default=os.path.join(
         #     default_config.hf_model_dir,
         #     "awq_model-4bit-128g.safetensors"
@@ -213,8 +214,8 @@ def parse_arguments():
         default="float16",
         choices=["float16", "bfloat16", "float32", None],
     )
-    parser.add_argument("--parallel_build", default=False, action="store_true")
-    parser.add_argument("--enable_context_fmha", default=False, action="store_true")
+    parser.add_argument("--parallel_build", default=True, action="store_true")
+    parser.add_argument("--enable_context_fmha", default=True, action="store_true")
     parser.add_argument(
         "--enable_context_fmha_fp32_acc", default=False, action="store_true"
     )
@@ -225,10 +226,10 @@ def parse_arguments():
     parser.add_argument(
         "--output_dir",
         type=str,
-        default=default_config.engine_dir,
+        default='/home/jqsoft/Qwen-TensorRT-LLM/examples/qwen2/qwen1.5_72b_chat_int4/trt_engines/int4_gptq_cpudevice/4-gpu',
         help="The path to save the serialized engine files, timing cache file and model configs",
     )
-    parser.add_argument("--remove_input_padding", default=False, action="store_true")
+    parser.add_argument("--remove_input_padding", default=True, action="store_true")
     # Arguments related to the quantization of the model.
     parser.add_argument(
         "--use_smooth_quant",
@@ -256,7 +257,7 @@ def parse_arguments():
 
     parser.add_argument(
         "--per_group",
-        default=False,
+        default=True,
         action="store_true",
         help="By default, we use a single static scaling factor to scale weights in the int4 range. "
         "per_group chooses at run time, and for each group, a custom scaling factor. "
@@ -280,7 +281,7 @@ def parse_arguments():
     )
     parser.add_argument(
         "--use_weight_only",
-        default=False,
+        default=True,
         action="store_true",
         help="Quantize weights for the various GEMMs to INT4/INT8."
         "See --weight_only_precision to set the precision",
@@ -299,7 +300,7 @@ def parse_arguments():
     parser.add_argument(
         "--use_inflight_batching",
         action="store_true",
-        default=False,
+        default=True,
         help="Activates inflight batching mode of gptAttentionPlugin.",
     )
     parser.add_argument(
@@ -368,6 +369,9 @@ def parse_arguments():
     )
 
     args = parser.parse_args()
+    print('========'*10)
+    print(args)
+    print('========'*10)
     assert not (
         args.use_smooth_quant and args.use_weight_only
     ), "You cannot enable both SmoothQuant and INT8 weight-only together."
