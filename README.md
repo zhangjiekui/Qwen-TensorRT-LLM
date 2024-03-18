@@ -1,7 +1,10 @@
 ### 补充材料
 安装：已经准备好的docker镜像
 https://www.modelscope.cn/models/tiansz/qwen_triton_trt_llm/summary
-https://www.51cto.com/article/781021.html
+**https://www.51cto.com/article/781021.html**
+
+1、docker pull hubimage/nvidia-tensorrt-llm:v0.7.1
+2、docker run --gpus all -v $PWD:/home/jqsoft/Qwen-TensorRT-LLM -it --rm hubimage/nvidia-tensorrt-llm:v0.7.1 bash
 
 
 
