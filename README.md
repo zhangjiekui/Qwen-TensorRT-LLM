@@ -3,9 +3,9 @@
 https://www.modelscope.cn/models/tiansz/qwen_triton_trt_llm/summary
 **https://www.51cto.com/article/781021.html**
 
-#1、docker pull hubimage/nvidia-tensorrt-llm:v0.7.1
-#2、cd /home/jqsoft  git clone git clone https://github.com/Tlntin/Qwen-TensorRT-LLM.git
-#3、docker run --gpus all -v $PWD:/home/jqsoft/Qwen-TensorRT-LLM -it --rm hubimage/nvidia-tensorrt-llm:v0.7.1 bash
+# 1、docker pull hubimage/nvidia-tensorrt-llm:v0.7.1 
+# 2、cd /home/jqsoft  git clone git clone https://github.com/Tlntin/Qwen-TensorRT-LLM.git
+# 3、docker run --gpus all -v $PWD:/home/jqsoft/Qwen-TensorRT-LLM -it --rm hubimage/nvidia-tensorrt-llm:v0.7.1 bash
 
 
 
