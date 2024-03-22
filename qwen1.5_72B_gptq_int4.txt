@@ -1,3 +1,13 @@
+docker run \
+--shm-size=64g \
+--name xinference -d -p 9997:9997 -e XINFERENCE_MODEL_SRC=modelscope \
+-v /home/jqsoft/.xinference:/root/.xinference \
+-v /home/jqsoft/.cache/huggingface:/root/.cache/huggingface \
+-v /home/jqsoft/.cache/modelscope:/root/.cache/modelscope \
+--gpus all xprobe/xinference:latest xinference-local -H 0.0.0.0 --log-level debug
+
+xinference launch --model-name qwen1.5-chat --size-in-billions 72 --model-format gptq --quantization Int4 
+
 docker run --name xinference -d -p 9997:9997 -e XINFERENCE_HOME=/data -e XINFERENCE_MODEL_SRC=modelscope \
 -v /home/jqsoft/.xinference:/root/.xinference \
 -v /home/jqsoft/.cache/huggingface:/root/.cache/huggingface \
