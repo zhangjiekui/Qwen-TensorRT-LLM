@@ -1,3 +1,6 @@
+docker run --name xinference -d -p 9997:9997 -e XINFERENCE_HOME=/data -v /home/jqsoft/.cache:/data --gpus all xprobe/xinference:latest xinference-local -H 0.0.0.0
+
+
 Vllm Docker:
 docker run --runtime nvidia --gpus all \
     -v /home/jqsoft/Qwen-TensorRT-LLM/examples/qwen2/qwen1.5_72b_chat_int4:/home/jqsoft/Qwen-TensorRT-LLM/examples/qwen2/qwen1.5_72b_chat_int4 \
